@@ -1,4 +1,4 @@
-# Web Fruit & Vegetables – Fullstack Project
+# Web Fruit & Vegetables
 
 ## Giới thiệu
 
