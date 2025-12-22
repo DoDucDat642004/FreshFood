@@ -132,6 +132,10 @@ export class OrdersService {
     if (discountAmount > maxDiscount) discountAmount = maxDiscount;
 
     const finalTotal = Math.max(0, subTotal + shippingFee - discountAmount);
+    const status =
+      finalTotal === 0 ? OrderStatus.CONFIRMED : OrderStatus.PENDING;
+    const paymentStatus =
+      finalTotal === 0 ? PaymentStatus.PAID : PaymentStatus.UNPAID;
 
     // 4: Lưu đơn hàng vào MongoDB
     try {
@@ -142,9 +146,9 @@ export class OrdersService {
         customerInfo: customerInfo, // Object { name, phone, address... }
         items: orderItems,
 
-        status: OrderStatus.PENDING,
+        status: status,
         paymentMethod: paymentMethod,
-        paymentStatus: PaymentStatus.UNPAID,
+        paymentStatus: paymentStatus,
 
         // Khởi tạo lịch sử đơn hàng
         history: [
