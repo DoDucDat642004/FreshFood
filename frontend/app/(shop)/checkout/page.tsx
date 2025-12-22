@@ -70,9 +70,11 @@ interface CheckoutFormData {
 const BankTransferModal = ({
   order,
   onClose,
+  onSuccess,
 }: {
   order: any;
   onClose: () => void;
+  onSuccess: () => void;
 }) => {
   const router = useRouter();
 
@@ -97,6 +99,9 @@ const BankTransferModal = ({
         if (res.status === "CONFIRMED" || res.status === "PAID") {
           toast.success("Thanh toán thành công!");
           clearInterval(interval);
+
+          onSuccess();
+
           router.push(`/thank-you?orderId=${order._id}`);
         }
       } catch (e) {
@@ -104,7 +109,7 @@ const BankTransferModal = ({
       }
     }, 3000);
     return () => clearInterval(interval);
-  }, [order._id, router]);
+  }, [order._id, router, , onSuccess]);
 
   // Copy nội dung chuyển khoản
   const handleCopy = () => {
@@ -484,7 +489,7 @@ export default function CheckoutPage() {
 
   const onPlaceOrder: SubmitHandler<CheckoutFormData> = async (data) => {
     setIsProcessing(true);
-    setIsSuccess(true); // Đánh dấu là đã thành công để chặn useEffect redirect về products
+    // setIsSuccess(true); // Đánh dấu là đã thành công để chặn useEffect redirect về products
     try {
       // Tính toán tổng tiền cuối cùng
       const finalTotal = totalPrice + shippingFee - totalDiscount;
@@ -540,7 +545,7 @@ export default function CheckoutPage() {
       } else if (paymentMethod === "banking") {
         setCurrentOrder(res);
         setShowPaymentModal(true);
-        clearCart();
+        // clearCart();
       } else {
         clearCart();
         toast.success("Đặt hàng thành công!");
@@ -559,6 +564,9 @@ export default function CheckoutPage() {
   const handleCloseModal = () => {
     setShowPaymentModal(false);
     // router.push("/order-history");
+    toast.info(
+      "Bạn đã hủy thanh toán QR. Vui lòng thử lại hoặc chọn phương thức khác."
+    );
   };
 
   // Tránh render khi chưa có dữ liệu giỏ hàng
@@ -569,7 +577,14 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-gray-50 py-10 font-sans text-slate-800">
       {/* 1. Modal Thanh Toán QR */}
       {showPaymentModal && currentOrder && (
-        <BankTransferModal order={currentOrder} onClose={handleCloseModal} />
+        <BankTransferModal
+          order={currentOrder}
+          onClose={handleCloseModal}
+          onSuccess={() => {
+            clearCart();
+            setIsSuccess(true);
+          }}
+        />
       )}
 
       <div className="container mx-auto px-4 max-w-6xl">
