@@ -193,8 +193,8 @@ export default function CheckoutPage() {
   const [provinces, setProvinces] = useState<Location[]>([]);
   const [districts, setDistricts] = useState<Location[]>([]);
   const [wards, setWards] = useState<Location[]>([]);
-  const [selectedProvince, setSelectedProvince] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
+  // const [selectedProvince, setSelectedProvince] = useState("");
+  // const [selectedDistrict, setSelectedDistrict] = useState("");
 
   // Selected IDs
   const [selectedProvinceId, setSelectedProvinceId] = useState("");
@@ -376,25 +376,34 @@ export default function CheckoutPage() {
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const provinceId = e.target.value;
-    setSelectedProvince(provinceId);
+
+    setSelectedProvinceId(provinceId);
 
     // Reset District & Ward
     setDistricts([]);
     setWards([]);
-    setSelectedDistrict("");
+    setSelectedDistrictId("");
+    setSelectedWardId("");
+
+    // Reset value trong form
     setValue("districtName", "");
     setValue("wardName", "");
 
     // Set Name cho form
     const provinceName = provinces.find((p) => p.id === provinceId)?.name || "";
-    setValue("cityName", provinceName);
+
+    setValue("cityName", provinceName, { shouldValidate: true });
 
     // Load Districts
     if (provinceId) {
-      const res = await axios.get(
-        `https://esgoo.net/api-tinhthanh/2/${provinceId}.htm`
-      );
-      if (res.data.error === 0) setDistricts(res.data.data);
+      try {
+        const res = await axios.get(
+          `https://esgoo.net/api-tinhthanh/2/${provinceId}.htm`
+        );
+        if (res.data.error === 0) setDistricts(res.data.data);
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 
@@ -402,29 +411,38 @@ export default function CheckoutPage() {
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const districtId = e.target.value;
-    setSelectedDistrict(districtId);
+
+    setSelectedDistrictId(districtId);
 
     // Reset Ward
     setWards([]);
+    setSelectedWardId("");
     setValue("wardName", "");
 
     // Set Name cho form
     const districtName = districts.find((d) => d.id === districtId)?.name || "";
-    setValue("districtName", districtName);
+    setValue("districtName", districtName, { shouldValidate: true });
 
     // Load Wards
     if (districtId) {
-      const res = await axios.get(
-        `https://esgoo.net/api-tinhthanh/3/${districtId}.htm`
-      );
-      if (res.data.error === 0) setWards(res.data.data);
+      try {
+        const res = await axios.get(
+          `https://esgoo.net/api-tinhthanh/3/${districtId}.htm`
+        );
+        if (res.data.error === 0) setWards(res.data.data);
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 
   const handleWardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const wardId = e.target.value;
+
+    setSelectedWardId(wardId);
+
     const wardName = wards.find((w) => w.id === wardId)?.name || "";
-    setValue("wardName", wardName);
+    setValue("wardName", wardName, { shouldValidate: true });
   };
 
   // --- D. HANDLERS: COUPON ---
@@ -510,18 +528,15 @@ export default function CheckoutPage() {
       } else {
         clearCart();
         toast.success("Đặt hàng thành công!");
+        router.push(`/thank-you?orderId=${res._id}`);
       }
-      console.log("ok");
-      router.push(`/thank-you?orderId=${res._id}`);
     } catch (error: any) {
       console.error("Lỗi đặt hàng:", error);
       toast.error(
         error.response?.data?.message || "Đặt hàng thất bại. Vui lòng thử lại."
       );
-      setIsSuccess(false);
     } finally {
       setIsProcessing(false);
-      // setIsSuccess(false);
     }
   };
 
