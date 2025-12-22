@@ -83,26 +83,13 @@ export default function HomePage() {
 
   // 2. Check User Profile (Để ẩn hiện Newsletter)
   useEffect(() => {
-    // Kiểm tra xem có token ở client không trước khi gọi API
-    const tokenCookie = Cookies.get("token");
-    const tokenLocal =
-      typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
-    const token = tokenCookie || tokenLocal;
-
-    // Nếu không có token (Khách vãng lai), thì KHÔNG LÀM GÌ CẢ (không gọi API)
-    if (!token) {
-      // setIsUser(false);
-      return;
-    }
-
     const fetchUser = async () => {
       try {
         const user = await userService.getProfile();
         if (user) setIsUser(true);
       } catch (e: any) {
         // User chưa login, bỏ qua
-        if (e.response && e.response.status === 401) {
+        if (e.response.status === 401) {
           Cookies.remove("token");
           localStorage.removeItem("token");
           setIsUser(false);

@@ -56,6 +56,8 @@ export default function LoginPage() {
       // B2: Lưu Token vào Storage (Client-side usage)
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
+      Cookies.set("token", accessToken, { expires: 7 });
+      Cookies.set("role", role, { expires: 7 });
 
       // B3: Lưu Cookie (Middleware usage & Server-side checks)
       Cookies.set("role", role, { expires: 1 }); // 1 ngày

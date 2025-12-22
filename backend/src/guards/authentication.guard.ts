@@ -8,7 +8,6 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
 import { Request } from 'express';
-import { Reflector } from '@nestjs/core';
 
 /**
  * AuthenticationGuard: Middleware kiểm tra đăng nhập.
