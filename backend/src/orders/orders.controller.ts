@@ -106,7 +106,7 @@ export class OrdersController {
    */
   @Put(':id/status')
   @UseGuards(AuthenticationGuard)
-  // @Permissions([{ resource: Resource.orders, actions: [Action.update] }])
+  @Permissions([{ resource: Resource.orders, actions: [Action.update] }])
   @Audit(Resource.orders, Action.update)
   updateStatus(
     @Param('id') id: string,
@@ -136,7 +136,7 @@ export class OrdersController {
    */
   @Put(':id/payment-status')
   @UseGuards(AuthenticationGuard)
-  // @Permissions([{ resource: Resource.orders, actions: [Action.update] }])
+  @Permissions([{ resource: Resource.orders, actions: [Action.update] }])
   @Audit(Resource.orders, Action.update)
   updatePaymentStatus(
     @Param('id') id: string,
