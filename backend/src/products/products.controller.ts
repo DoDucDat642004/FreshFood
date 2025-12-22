@@ -52,6 +52,7 @@ export class ProductsController {
    * Hỗ trợ lọc theo giá, sao, danh mục, từ khóa
    */
   @Get()
+  @UseGuards(AuthenticationGuard)
   findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
@@ -61,7 +62,9 @@ export class ProductsController {
     @Query('minRating') minRating?: number,
     @Query('category') category: string = '',
     @Query('sort') sort: string = 'newest', // newest | price_asc | price_desc
+    @Req() req?: any,
   ) {
+    const userRole = req?.user?.role ? req.user.role : 'Customer';
     // Ép kiểu về số vì Query Params luôn là string
     return this.productsService.findAll(
       Number(page),
@@ -72,6 +75,7 @@ export class ProductsController {
       minRating ? Number(minRating) : undefined,
       category,
       sort,
+      userRole,
     );
   }
 

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isValidObjectId, Model, Types } from 'mongoose';
 import { Order, OrderDocument } from './entities/order.entity';
@@ -15,6 +15,7 @@ export class OrdersService {
   constructor(
     @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
+    @Inject(forwardRef(() => InventoryService))
     private inventoryService: InventoryService, // Service Kho
     private couponsService: CouponsService, // Service Mã giảm giá
   ) {}

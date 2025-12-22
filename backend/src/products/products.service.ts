@@ -57,9 +57,11 @@ export class ProductsService {
     minRating?: number,
     category?: string,
     sort: string = 'newest',
+    role: string = 'Customer',
   ) {
     // 1. Tạo bộ lọc cơ bản (Chỉ lấy SP chưa xóa)
     const filter: any = { isDeleted: false };
+    if (role === 'Customer') filter.isAvailable = true;
 
     // 2. Logic tìm kiếm từ khóa (Keyword)
     if (keyword && keyword.trim() !== '') {
