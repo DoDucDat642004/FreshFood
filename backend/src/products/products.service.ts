@@ -38,7 +38,9 @@ export class ProductsService {
         role: actor?.role || 'Unknown',
       },
       undefined,
-      createProductDto.origin,
+      createProductDto.supplier
+        ? createProductDto.supplier.toString()
+        : undefined,
       createProductDto.sku,
     );
     return createProduct;
