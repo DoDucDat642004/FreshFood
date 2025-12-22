@@ -342,7 +342,7 @@ export default function CheckoutPage() {
   // 3. Redirect nếu giỏ hàng trống
   useEffect(() => {
     // Nếu giỏ hàng trống vì thanh toán thành công thì không chuyển sang page products
-    if (cart.length === 0 && !showPaymentModal && !isSuccess) {
+    if (cart.length === 0 && !showPaymentModal && !isSuccess && !currentOrder) {
       router.push("/products");
     }
   }, [cart, router, showPaymentModal, isSuccess]);
@@ -486,6 +486,9 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     setIsSuccess(true); // Đánh dấu là đã thành công để chặn useEffect redirect về products
     try {
+      // Tính toán tổng tiền cuối cùng
+      const finalTotal = totalPrice + shippingFee - totalDiscount;
+
       // Validate địa chỉ lần cuối (vì select option có thể chưa chọn)
       if (!data.cityName || !data.districtName || !data.wardName) {
         toast.error("Vui lòng chọn đầy đủ Tỉnh/Thành, Quận/Huyện, Phường/Xã");
@@ -497,6 +500,13 @@ export default function CheckoutPage() {
       const validCouponCodes = appliedCoupons
         .filter((c) => totalPrice >= (c.minOrderValue || 0))
         .map((c) => c.code);
+
+      const method =
+        finalTotal <= 0
+          ? "COD"
+          : paymentMethod === "banking"
+          ? "BANK_TRANSFER"
+          : "COD";
 
       const orderPayload = {
         customerInfo: {
@@ -514,14 +524,20 @@ export default function CheckoutPage() {
           productId: item.id,
           quantity: Number(item.quantity),
         })),
-        paymentMethod: paymentMethod === "banking" ? "BANK_TRANSFER" : "COD",
+        paymentMethod: method,
         couponCodes: validCouponCodes,
       };
 
       // Gọi API tạo đơn
       const res = await orderService.createOrder(orderPayload);
 
-      if (paymentMethod === "banking") {
+      if (finalTotal <= 0) {
+        // TRƯỜNG HỢP: 0 ĐỒNG -> THÀNH CÔNG LUÔN
+        clearCart();
+        toast.success("Đơn hàng 0đ đã được xác nhận!");
+        setIsSuccess(true);
+        router.push(`/thank-you?orderId=${res._id}`);
+      } else if (paymentMethod === "banking") {
         setCurrentOrder(res);
         setShowPaymentModal(true);
         clearCart();
@@ -542,7 +558,7 @@ export default function CheckoutPage() {
 
   const handleCloseModal = () => {
     setShowPaymentModal(false);
-    router.push("/order-history");
+    // router.push("/order-history");
   };
 
   // Tránh render khi chưa có dữ liệu giỏ hàng
