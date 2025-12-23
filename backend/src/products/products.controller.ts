@@ -23,6 +23,7 @@ import { Action } from 'src/roles/enums/action.enum';
 import { Audit } from 'src/common/decorators/audit.decorator';
 import { AuditInterceptor } from 'src/common/interceptors/audit.interceptor';
 import { UpdateProductDto } from './dtos/update-product.dto';
+import { OptionalAuth } from 'src/common/decorators/optional-auth.decorator';
 
 /**
  * Controller Quản lý Sản phẩm
@@ -52,7 +53,9 @@ export class ProductsController {
    * Hỗ trợ lọc theo giá, sao, danh mục, từ khóa
    */
   @Get()
-  @UseGuards(AuthenticationGuard)
+  @UseGuards(AuthenticationGuard, AuthorizationGuard)
+  @Permissions([{ resource: Resource.products, actions: [Action.read] }])
+  @OptionalAuth()
   findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
@@ -64,8 +67,12 @@ export class ProductsController {
     @Query('sort') sort: string = 'newest', // newest | price_asc | price_desc
     @Req() req?: any,
   ) {
-    const userRole = req?.user?.role ? req.user.role : 'Customer';
-    // Ép kiểu về số vì Query Params luôn là string
+    // 1. Lấy role thô từ Request (có thể là String hoặc Object)
+    const rawRole = req?.user?.role;
+    // 2. Chuẩn hóa về String 'Customer' / 'Admin'
+    const userRole = rawRole?.name ? rawRole.name : rawRole || 'Customer';
+
+    // 3. Ép kiểu về số vì Query Params luôn là string
     return this.productsService.findAll(
       Number(page),
       Number(limit),
